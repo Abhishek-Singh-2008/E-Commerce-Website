@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation - Banaras Bartan</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+        <img src="https://i.postimg.cc/bJMg6rx4/Whats-App-Image-2025-07-11-at-3-19-00-PM.jpg" 
+             alt="Logo" class="navbar-logo me-2 rounded-circle">
+        <div>
+          <span class="brand-name">Banaras Bartan</span>
+          <small class="brand-tagline d-block text-warning">Order Confirmation</small>
+        </div>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card shadow text-center">
+          <div class="card-body p-5">
+            <div class="mb-4">
+              <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+            </div>
+            
+            <h2 class="text-success mb-3">Order Placed Successfully!</h2>
+            
+            <p class="text-muted mb-4">
+              Thank you for your order. We have received your order details and will process it shortly.
+            </p>
+
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>What happens next?</strong>
+              <ul class="list-unstyled mt-2 mb-0">
+                <li>• We will verify your payment details</li>
+                <li>• Our team will contact you to confirm the order</li>
+                <li>• We will prepare your order for delivery</li>
+                <li>• You will receive updates on WhatsApp</li>
+              </ul>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+              <a href="https://wa.me/917571059297?text=Hello%2C%20I%20want%20to%20check%20my%20order%20status" 
+                 class="btn btn-success btn-lg" target="_blank">
+                <i class="fab fa-whatsapp me-2"></i>Contact Us on WhatsApp
+              </a>
+              
+              <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                <i class="fas fa-home me-2"></i>Back to Store
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
