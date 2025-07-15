@@ -1,80 +1,131 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Confirmation - Banaras Bartan</title>
-  
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Custom CSS -->
-  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-</head>
-<body>
+{% extends "base.html" %}
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
-        <img src="https://i.postimg.cc/bJMg6rx4/Whats-App-Image-2025-07-11-at-3-19-00-PM.jpg" 
-             alt="Logo" class="navbar-logo me-2 rounded-circle">
-        <div>
-          <span class="brand-name">Banaras Bartan</span>
-          <small class="brand-tagline d-block text-warning">Order Confirmation</small>
-        </div>
-      </a>
-    </div>
-  </nav>
+{% block title %}Order Confirmation - CookwareCraft{% endblock %}
 
-  <!-- Main Content -->
-  <div class="container mt-5">
+{% block content %}
+<div class="container py-5">
     <div class="row justify-content-center">
-      <div class="col-lg-6">
-        <div class="card shadow text-center">
-          <div class="card-body p-5">
-            <div class="mb-4">
-              <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-check-circle text-success fa-4x mb-4"></i>
+                    <h2 class="text-success mb-3">Order Confirmed!</h2>
+                    <p class="lead mb-4">Thank you for your order. We've received your order and will process it soon.</p>
+                    
+                    <div id="orderSummary" class="bg-light p-4 rounded mb-4">
+                        <h5>Order Summary</h5>
+                        <div id="orderDetails">
+                            <p class="text-muted">Loading order details...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>What's Next?</h6>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="fas fa-clipboard-check text-primary fa-2x mb-2"></i>
+                                    <small class="text-center">Order Processing</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="fas fa-shipping-fast text-info fa-2x mb-2"></i>
+                                    <small class="text-center">Shipping</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="fas fa-home text-success fa-2x mb-2"></i>
+                                    <small class="text-center">Delivered</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('track_order_page') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-search me-2"></i>Track Order
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('index') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-shopping-cart me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <h2 class="text-success mb-3">Order Placed Successfully!</h2>
-            
-            <p class="text-muted mb-4">
-              Thank you for your order. We have received your order details and will process it shortly.
-            </p>
-
-            <div class="alert alert-info">
-              <i class="fas fa-info-circle me-2"></i>
-              <strong>What happens next?</strong>
-              <ul class="list-unstyled mt-2 mb-0">
-                <li>• We will verify your payment details</li>
-                <li>• Our team will contact you to confirm the order</li>
-                <li>• We will prepare your order for delivery</li>
-                <li>• You will receive updates on WhatsApp</li>
-              </ul>
-            </div>
-
-            <div class="d-grid gap-2 mt-4">
-              <a href="https://wa.me/917571059297?text=Hello%2C%20I%20want%20to%20check%20my%20order%20status" 
-                 class="btn btn-success btn-lg" target="_blank">
-                <i class="fab fa-whatsapp me-2"></i>Contact Us on WhatsApp
-              </a>
-              
-              <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
-                <i class="fas fa-home me-2"></i>Back to Store
-              </a>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Additional Information -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Important Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-phone text-primary me-2"></i>Contact Support</h6>
+                            <p class="text-muted">If you have any questions about your order, feel free to contact us.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-shield-alt text-success me-2"></i>Secure Payment</h6>
+                            <p class="text-muted">Your payment information is secure and encrypted.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-truck text-info me-2"></i>Delivery Info</h6>
+                            <p class="text-muted">We'll send updates about your order status via phone.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-undo text-warning me-2"></i>Return Policy</h6>
+                            <p class="text-muted">Easy returns within 7 days of delivery.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
-</body>
-</html>
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get order details from sessionStorage
+    const orderId = sessionStorage.getItem('lastOrderId');
+    const orderTotal = sessionStorage.getItem('lastOrderTotal');
+    
+    if (orderId && orderTotal) {
+        document.getElementById('orderDetails').innerHTML = `
+            <div class="d-flex justify-content-between">
+                <span><strong>Order ID:</strong></span>
+                <span>#${orderId}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span><strong>Total Amount:</strong></span>
+                <span class="text-success">₹${orderTotal}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span><strong>Order Status:</strong></span>
+                <span class="badge bg-warning">Pending</span>
+            </div>
+        `;
+        
+        // Clear session storage
+        sessionStorage.removeItem('lastOrderId');
+        sessionStorage.removeItem('lastOrderTotal');
+    } else {
+        document.getElementById('orderDetails').innerHTML = `
+            <p class="text-muted">Order details not available. Please use the track order feature to check your order status.</p>
+        `;
+    }
+});
+</script>
+{% endblock %}
