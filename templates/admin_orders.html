@@ -1,483 +1,385 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Orders - Banaras Bartan</title>
+{% block title %}Admin Dashboard - CookwareCraft{% endblock %}
 
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Custom CSS -->
-  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-</head>
-
-<body>
-
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
-        <img src="https://i.postimg.cc/bJMg6rx4/Whats-App-Image-2025-07-11-at-3-19-00-PM.jpg" alt="Logo"
-          class="navbar-logo me-2 rounded-circle">
-        <div>
-          <span class="brand-name">Banaras Bartan</span>
-          <small class="brand-tagline d-block text-warning">Admin Orders</small>
-        </div>
-      </a>
-
-      <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="{{ url_for('index') }}">
-          <i class="fas fa-home me-1"></i>Back to Store
-        </a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main Content -->
-  <div class="container mt-4">
+{% block content %}
+<div class="container-fluid py-4">
     <div class="row">
-      <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h2><i class="fas fa-clipboard-list me-2"></i>Customer Orders</h2>
-          <div>
-            <button class="btn btn-primary" onclick="refreshOrders()">
-              <i class="fas fa-sync-alt me-1"></i>Refresh
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h2>
+                <button class="btn btn-outline-danger" onclick="adminLogout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                <i class="fas fa-shopping-cart me-2"></i>Orders ({{ orders|length }})
             </button>
-          </div>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">
+                <i class="fas fa-utensils me-2"></i>Products ({{ products|length }})
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="adminTabsContent">
+        <!-- Orders Tab -->
+        <div class="tab-pane fade show active" id="orders" role="tabpanel">
+            <div class="card mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Order Management</h5>
+                    <small class="text-muted">Total Orders: {{ orders|length }}</small>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    
+                    {% if orders %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Customer</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td>#{{ order.id }}</td>
+                                        <td>
+                                            <strong>{{ order.customer_name }}</strong><br>
+                                            <small class="text-muted">{{ order.customer_phone }}</small>
+                                        </td>
+                                        <td>{{ order.product_name }}</td>
+                                        <td>{{ order.quantity }}</td>
+                                        <td>₹{{ order.total_amount }}</td>
+                                        <td>
+                                            <select class="form-select form-select-sm" onchange="updateOrderStatus({{ order.id }}, 'payment_status', this.value)">
+                                                <option value="pending" {% if order.payment_status == 'pending' %}selected{% endif %}>Pending</option>
+                                                <option value="paid" {% if order.payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                                                <option value="failed" {% if order.payment_status == 'failed' %}selected{% endif %}>Failed</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-select-sm" onchange="updateOrderStatus({{ order.id }}, 'order_status', this.value)">
+                                                <option value="pending" {% if order.order_status == 'pending' %}selected{% endif %}>Pending</option>
+                                                <option value="processing" {% if order.order_status == 'processing' %}selected{% endif %}>Processing</option>
+                                                <option value="shipped" {% if order.order_status == 'shipped' %}selected{% endif %}>Shipped</option>
+                                                <option value="delivered" {% if order.order_status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                                <option value="cancelled" {% if order.order_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                            </select>
+                                        </td>
+                                        <td>{{ order.created_at[:10] if order.created_at else 'N/A' }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="viewOrderDetails({{ order.id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder({{ order.id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <h5>No orders found</h5>
+                            <p class="text-muted">Orders will appear here once customers start placing them.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
-        <!-- Orders Table -->
-        <div class="card">
-          <div class="card-body">
-            {% if orders %}
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead class="table-dark">
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Product</th>
-                    <th>Amount</th>
-                    <th>Payment</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for order in orders %}
-                  <tr id="order-{{ order.id }}" data-id="{{ order.id }}">
-                    <td>
-                      <span class="badge bg-secondary">#{{ order.id }}</span>
-                    </td>
-                    <td>
-                      <div>
-                        <strong>{{ order.customer_name }}</strong>
-                        <br>
-                        <small class="text-muted">
-                          <i class="fas fa-phone me-1"></i>{{ order.customer_phone }}
-                        </small>
-                        {% if order.customer_email %}
-                        <br>
-                        <small class="text-muted">
-                          <i class="fas fa-envelope me-1"></i>{{ order.customer_email }}
-                        </small>
-                        {% endif %}
-                      </div>
-                    </td>
-                    <td>
-                      <div>
-                        <strong>{{ order.product_name }}</strong>
-                        <br>
-                        <small class="text-muted">Qty: {{ order.quantity }}</small>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="h5 text-success">₹{{ order.total_amount }}</span>
-                    </td>
-                    <td>
-                      <div>
-                        <span
-                          class="badge bg-{{ 'success' if order.payment_status == 'completed' else 'warning' if order.payment_status == 'pending' else 'danger' }}">
-                          {{ order.payment_status.title() }}
-                        </span>
-                        <br>
-                        <small class="text-muted">
-                          <i class="fas fa-credit-card me-1"></i>{{ order.payment_method.upper() }}
-                        </small>
-                        {% if order.upi_transaction_id %}
-                        <br>
-                        <small class="text-muted">ID: {{ order.upi_transaction_id }}</small>
-                        {% endif %}
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        class="badge bg-{{ 'success' if order.order_status == 'delivered' else 'info' if order.order_status == 'shipped' else 'warning' if order.order_status == 'confirmed' else 'secondary' }}">
-                        {{ order.order_status.title() }}
-                      </span>
-                    </td>
-                    <td>
-                      <small>{{ order.created_at }}</small>
-                    </td>
-                    <td>
-                      <div class="btn-group" role="group">
-                        <button class="btn btn-sm btn-outline-primary" onclick="updateOrderStatus('{{ order.id }}')">
-                          <i class="fas fa-edit"></i>
+        <!-- Products Tab -->
+        <div class="tab-pane fade" id="products" role="tabpanel">
+            <div class="card mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Product Management</h5>
+                    <!-- <button class="btn btn-primary" onclick="addProduct()">
+                        <i class="fas fa-plus me-2"></i>Add Product
+                    </button> -->
+                </div>
+                <div class="card-body">
+                    <div id="productsList">
+                        {% for product in products %}
+                        <div class="product-item card mb-3" data-product-id="{{ product.id }}">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2">
+                                        <img src="{{ product.image }}" alt="{{ product.name }}" class="img-fluid rounded" style="height: 80px; object-fit: cover;">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="text" class="form-control mb-2" value="{{ product.name }}" placeholder="Product Name">
+                                        <textarea class="form-control mb-2" rows="2" placeholder="Description">{{ product.description }}</textarea>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <input type="number" class="form-control" value="{{ product.price }}" placeholder="Price">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="url" class="form-control" value="{{ product.image }}" placeholder="Image URL">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button class="btn btn-outline-danger btn-sm" onclick="removeProduct(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button class="btn btn-success" onclick="saveProducts()">
+                            <i class="fas fa-save me-2"></i>Save All Products
                         </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="viewOrderDetails('{{ order.id }}')">
-                          <i class="fas fa-eye"></i>
-                        </button>
-
-                        <!-- existing buttons ... -->
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder(this)" title="Delete order">
-                          <i class="fas fa-trash"></i>
-                        </button>
-
-
-                      </div>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+                    </div>
+                </div>
             </div>
-            {% else %}
-            <div class="text-center py-5">
-              <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-              <h4 class="text-muted">No orders yet</h4>
-              <p class="text-muted">Orders will appear here when customers make purchases.</p>
-            </div>
-            {% endif %}
-          </div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
-
-  <style>
-    /* ── admin‑orders‑ONLY tweaks ─────────────────────────── */
-
-    /* 1) keep the nav at the very top on THIS page */
-    body[data-page="admin-orders"] .navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 1030;
-    }
-
-    body[data-page="admin-orders"] {
-      padding-top: 72px;
-      /* navbar height + spacing */
-    }
-
-    /* 2) truncate long amounts so they don't overflow */
-    body[data-page="admin-orders"] td.price-cell {
-      max-width: 140px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* 3) float the Owner‑Login box bottom‑right */
-    body[data-page="admin-orders"] #ownerLoginPanel {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      width: 260px;
-      z-index: 1020;
-    }
-  </style>
-
-
-  <!-- Order Status Update Modal -->
-  <div class="modal fade" id="orderStatusModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">
-            <i class="fas fa-edit me-2"></i>Update Order Status
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form id="orderStatusForm">
-            <input type="hidden" id="orderId">
-
-            <div class="mb-3">
-              <label class="form-label">Payment Status</label>
-              <select class="form-select" id="paymentStatus">
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="failed">Failed</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Order Status</label>
-              <select class="form-select" id="orderStatus">
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Notes</label>
-              <textarea class="form-control" id="orderNotes" rows="3"
-                placeholder="Add any notes about this order..."></textarea>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" onclick="saveOrderStatus()">
-            <i class="fas fa-save me-1"></i>Update Order
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Order Details Modal -->
-  <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">
-            <i class="fas fa-receipt me-2"></i>Order Details
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Order details will be loaded here -->
+            </div>
         </div>
-        <div class="modal-body" id="orderDetailsContent">
-          <!-- Order details will be loaded here -->
-        </div>
-      </div>
     </div>
-  </div>
+</div>
+{% endblock %}
 
-  <!-- Loading Spinner -->
-  <div id="loadingSpinner" class="loading-spinner d-none">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script>
-    // Refresh orders
-    function refreshOrders() {
-      window.location.reload();
-    }
-
-    // Update order status
-    function updateOrderStatus(orderId) {
-      document.getElementById('orderId').value = orderId;
-      const modal = new bootstrap.Modal(document.getElementById('orderStatusModal'));
-      modal.show();
-    }
-
-    // Save order status
-    async function saveOrderStatus() {
-      const orderId = document.getElementById('orderId').value;
-      const paymentStatus = document.getElementById('paymentStatus').value;
-      const orderStatus = document.getElementById('orderStatus').value;
-      const notes = document.getElementById('orderNotes').value;
-
-      showLoading();
-
-      try {
-        const response = await fetch(`/admin/orders/${orderId}/update`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            payment_status: paymentStatus,
-            order_status: orderStatus,
-            notes: notes
-          })
-        });
-
-        const data = await response.json();
-
+{% block scripts %}
+<script>
+function updateOrderStatus(orderId, field, value) {
+    fetch(`/admin/orders/${orderId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            [field]: value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
         if (data.success) {
-          showAlert('Order updated successfully!', 'success');
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
+            showAlert('Order updated successfully', 'success');
         } else {
-          showAlert(data.message || 'Error updating order', 'danger');
+            showAlert('Error: ' + data.message, 'danger');
         }
-      } catch (error) {
-        console.error('Error updating order:', error);
-        showAlert('Error updating order. Please try again.', 'danger');
-      } finally {
-        hideLoading();
-      }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Failed to update order', 'danger');
+    });
+}
+
+function deleteOrder(orderId) {
+    if (confirm('Are you sure you want to delete this order?')) {
+        fetch(`/admin/orders/${orderId}`, {
+            method: 'DELETE',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Order deleted successfully', 'success');
+                location.reload();
+            } else {
+                showAlert('Error: ' + data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Failed to delete order', 'danger');
+        });
     }
+}
 
-    // View order details
-    function viewOrderDetails(orderId) {
-      // Find the order row
-      const orderRow = document.querySelector(`#order-${orderId}`);
-      const cells = orderRow.getElementsByTagName('td');
+function viewOrderDetails(orderId) {
+    fetch(`/admin/orders/${orderId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const order = data.order;
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Customer Information</h6>
+                        <p><strong>Name:</strong> ${order.customer_name}</p>
+                        <p><strong>Phone:</strong> ${order.customer_phone}</p>
+                        <p><strong>Email:</strong> ${order.customer_email || 'N/A'}</p>
+                        <p><strong>Address:</strong> ${order.customer_address || 'N/A'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Order Information</h6>
+                        <p><strong>Product:</strong> ${order.product_name}</p>
+                        <p><strong>Quantity:</strong> ${order.quantity}</p>
+                        <p><strong>Total:</strong> ₹${order.total_amount}</p>
+                        <p><strong>Payment Method:</strong> ${order.payment_method}</p>
+                        <p><strong>UPI Transaction ID:</strong> ${order.upi_transaction_id || 'N/A'}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Status & Notes</h6>
+                        <p><strong>Payment Status:</strong> ${order.payment_status}</p>
+                        <p><strong>Order Status:</strong> ${order.order_status}</p>
+                        <p><strong>Notes:</strong> ${order.notes || 'None'}</p>
+                        <p><strong>Created:</strong> ${order.created_at}</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('orderDetailsContent').innerHTML = content;
+            const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+            modal.show();
+        } else {
+            showAlert('Error loading order details', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Failed to load order details', 'danger');
+    });
+}
 
-      // Extract order details
-      const orderDetails = `
-        <div class="row">
-          <div class="col-md-6">
-            <h6>Customer Information</h6>
-            <div class="mb-3">
-              ${cells[1].innerHTML}
+function addProduct() {
+    const productsList = document.getElementById('productsList');
+    const newProduct = document.createElement('div');
+    newProduct.className = 'product-item card mb-3';
+    newProduct.innerHTML = `
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-2">
+                    <img src="https://via.placeholder.com/80x80" alt="New Product" class="img-fluid rounded" style="height: 80px; object-fit: cover;">
+                </div>
+                <div class="col-md-8">
+                    <input type="text" class="form-control mb-2" placeholder="Product Name">
+                    <textarea class="form-control mb-2" rows="2" placeholder="Description"></textarea>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="number" class="form-control" placeholder="Price">
+                        </div>
+                        <div class="col-md-6">
+                            <input type="url" class="form-control" placeholder="Image URL">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-danger btn-sm" onclick="removeProduct(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
-          </div>
-          <div class="col-md-6">
-            <h6>Product Information</h6>
-            <div class="mb-3">
-              ${cells[2].innerHTML}
-            </div>
-          </div>
         </div>
-        <div class="row">
-          <div class="col-md-6">
-            <h6>Payment Details</h6>
-            <div class="mb-3">
-              <strong>Amount:</strong> ${cells[3].innerHTML}<br>
-              <strong>Status:</strong> ${cells[4].innerHTML}
-            </div>
-          </div>
-          <div class="col-md-6">
-            <h6>Order Status</h6>
-            <div class="mb-3">
-              ${cells[5].innerHTML}
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-12">
-            <h6>Order Date</h6>
-            <div class="mb-3">
-              ${cells[6].innerHTML}
-            </div>
-          </div>
-        </div>
-      `;
+    `;
+    productsList.appendChild(newProduct);
+}
 
-      document.getElementById('orderDetailsContent').innerHTML = orderDetails;
-      const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
-      modal.show();
+function removeProduct(button) {
+    if (confirm('Are you sure you want to remove this product?')) {
+        button.closest('.product-item').remove();
     }
+}
 
-    // Show loading
-    function showLoading() {
-      document.getElementById('loadingSpinner').classList.remove('d-none');
-    }
+function saveProducts() {
+    const products = [];
+    const productItems = document.querySelectorAll('.product-item');
+    
+    productItems.forEach(item => {
+        const inputs = item.querySelectorAll('input, textarea');
+        const product = {
+            name: inputs[0].value,
+            description: inputs[1].value,
+            price: inputs[2].value,
+            image: inputs[3].value
+        };
+        
+        if (product.name && product.price) {
+            products.push(product);
+        }
+    });
 
-    // Hide loading
-    function hideLoading() {
-      document.getElementById('loadingSpinner').classList.add('d-none');
-    }
+    fetch('/admin/update-products', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ products: products })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Products saved successfully', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert('Error: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Failed to save products', 'danger');
+    });
+}
 
-    // Show alert
-    function showAlert(message, type = 'info') {
-      const alert = document.createElement('div');
-      alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-      alert.style.top = '20px';
-      alert.style.right = '20px';
-      alert.style.zIndex = '9999';
-      alert.style.minWidth = '300px';
+function adminLogout() {
+    fetch('/admin/logout', {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '/';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        window.location.href = '/';
+    });
+}
 
-      alert.innerHTML = `
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      `;
-
-      document.body.appendChild(alert);
-
-      setTimeout(() => {
-        if (alert.parentNode) {
-          alert.remove();
-        }
-      }, 5000);
-    }
-
-
+    `;
+    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
     
-/* ── Delete an order from the Admin Orders table ───────────────────── */
-      async function deleteOrder(btn) {
-  const row = btn.closest('tr');
-      const id  = row.dataset.id;                       // reads data-id on <tr>
-
-        if (!confirm(`Delete order #${id}? This can’t be undone.`)) return;
-
-        btn.disabled = true;
-        const old = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-        try {
-    const res  = await fetch(`/admin/orders/${id}`, {method: 'DELETE' });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message || 'Deletion failed');
-
-        // fade‑out animation then remove the row
-        row.style.transition = 'opacity .3s ease';
-        row.style.opacity = 0;
-    setTimeout(() => row.remove(), 300);
-
-        showAlert(`Order #${id} deleted`, 'success');
-  } catch (err) {
-          console.error(err);
-        showAlert('Could not delete order: ' + err.message, 'danger');
-        btn.disabled = false; btn.innerHTML = old;
-  }
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
 }
-
-        /* ── Delete a product card on the storefront / admin products page ─── */
-        async function removeProduct(productId) {
-  const btn = document.querySelector(`[onclick="removeProduct(${productId})"]`);
-        const card = btn?.closest('.col-md-4');
-        if (!card) return;
-
-        if (!confirm('Delete this product permanently?')) return;
-
-        btn.disabled = true;
-        const oldHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-        try {
-    const res  = await fetch(`/admin/products/${productId}`, { method: 'DELETE' });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message || 'Delete failed');
-
-    card.style.transition = 'opacity .3s ease, transform .3s ease';
-    card.style.opacity = 0;
-    card.style.transform = 'translateY(-20px)';
-    setTimeout(() => card.remove(), 300);
-
-    showAlert('Product removed!', 'info');
-  } catch (err) {
-    console.error(err);
-    showAlert('Could not delete product: ' + err.message, 'danger');
-    btn.disabled = false; btn.innerHTML = oldHTML;
-  }
-}
-
-
-
-
-  </script>
-
-</body>
-
-<!--  -->
+</script>
+{% endblock %}
