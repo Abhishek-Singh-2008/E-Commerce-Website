@@ -58,11 +58,6 @@
               <i class="fas fa-search me-1"></i>Track Order
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/admin/orders" onclick="return checkAdminAccess()">
-              <i class="fas fa-user-shield me-1"></i>Orders
-            </a>
-          </li>
         </ul>
       </div>
     </div>
@@ -98,36 +93,45 @@
         {% for product in products %}
         <div class="col-lg-4 col-md-6">
           <div class="product-card h-100">
-
-            <!-- ⬇︎  Give each thumbnail the zoom classes + data-title  -->
             <div class="zoomable-image-container position-relative" data-title="{{ product.name }}"
               data-image="{{ product.image }}">
-
               <img class="product-image zoomable-image" src="{{ product.image }}" alt="{{ product.name }}"
                 onerror="this.src='https://images.unsplash.com/photo-1556909114-9e59f5a3c13b?w=400&amp;h=300&amp;fit=crop';" />
-
               <div class="product-overlay">
                 <i class="fas fa-search-plus"></i>
               </div>
             </div>
 
-
             <div class="product-content">
               <h5 class="product-name" id="name{{ product.id }}">{{ product.name }}</h5>
               <p class="product-description">{{ product.description }}</p>
               <div class="product-price" id="price{{ product.id }}">₹{{ product.price }}</div>
+              <div class="product-stock mb-3">
+                <small class="text-muted">
+                  {% if product.stock > 0 %}
+                    <i class="fas fa-check-circle text-success me-1"></i>{{ product.stock }} in stock
+                  {% else %}
+                    <i class="fas fa-times-circle text-danger me-1"></i>Out of stock
+                  {% endif %}
+                </small>
+              </div>
 
               <div class="product-actions">
+                {% if product.stock > 0 %}
                 <a href="{{ url_for('order_form', product_id=product.id) }}" class="btn btn-primary btn-action">
                   <i class="fas fa-shopping-cart me-2"></i>Order Now
                 </a>
+                {% else %}
+                <button class="btn btn-secondary btn-action" disabled>
+                  <i class="fas fa-ban me-2"></i>Out of Stock
+                </button>
+                {% endif %}
                 <a href="https://wa.me/917571059297?text=Hello%2C%20I%20want%20to%20purchase%3A%20{{ product.name|urlencode }}"
                   target="_blank" class="btn btn-success btn-action">
                   <i class="fab fa-whatsapp me-2"></i>WhatsApp Order
                 </a>
               </div>
             </div>
-
           </div>
         </div>
         {% endfor %}
@@ -135,14 +139,13 @@
     </div>
   </section>
 
-
   <!-- UPI Payment Section -->
   <section id="payment" class="py-5 bg-white">
     <div class="container text-center">
       <div class="mb-5">
         <h2 class="section-title">Pay via UPI</h2>
         <p class="section-subtitle">Scan the QR below using any UPI app (PhonePe, GPay, Paytm)</p>
-        <p class="section-subtitle">Please Note <b>TRANSACTION I'd</b> to Place Order</p>
+        <p class="section-subtitle">Please Note <b>TRANSACTION ID</b> to Place Order</p>
       </div>
 
       <div class="payment-card mx-auto">
@@ -188,7 +191,7 @@
               <i class="fas fa-map-marker-alt me-3"></i>
               <div>
                 <strong>Address:</strong><br>
-                D65/449, Laharata Baulia, Varanasi,<br>
+                D65/449, Laharatara Baulia, Varanasi,<br>
                 near Kotak Mahindra Bank
               </div>
             </div>
@@ -243,9 +246,14 @@
           </div>
 
           <div id="adminPanel" class="d-none">
+            <div class="d-flex justify-content-end mb-3">
+              <a href="/admin/orders" class="btn btn-warning">
+                <i class="fas fa-list me-2"></i>View Orders
+              </a>
+            </div>
             <div class="alert alert-info">
               <i class="fas fa-info-circle me-2"></i>
-              Update existing products or add new ones below. Changes are temporary and will reset on page refresh.
+              Update existing products or add new ones below. Changes are permanent and will reset on page refresh.
             </div>
 
             <div class="row g-3" id="productInputs">
@@ -276,6 +284,11 @@
                         value="{{ product.price }}">
                     </div>
                     <div class="mb-3">
+                      <label class="form-label">Stock</label>
+                      <input type="number" id="inputStock{{ product.id }}" class="form-control product-input"
+                        value="{{ product.stock }}">
+                    </div>
+                    <div class="mb-3">
                       <label class="form-label">Image URL</label>
                       <input type="url" id="inputImage{{ product.id }}" class="form-control product-input"
                         value="{{ product.image }}" placeholder="https://example.com/image.jpg">
@@ -290,10 +303,10 @@
               <button onclick="addNewProduct()" class="btn btn-primary me-2">
                 <i class="fas fa-plus me-2"></i>Add New Product
               </button>
-              <button onclick="updateProducts()" class="btn btn-success me-2">
+              <button onclick="updateProducts()" class="btn btn-success">
                 <i class="fas fa-save me-2"></i>Update Products
               </button>
-              <button onclick="adminLogout()" class="btn btn-outline-secondary">
+              <button onclick="adminLogout()" class="btn btn-outline-secondary ms-2">
                 <i class="fas fa-sign-out-alt me-2"></i>Logout
               </button>
             </div>
@@ -303,38 +316,39 @@
     </div>
   </div>
 
-<!-- ════════════  IMAGE ZOOM MODAL  ════════════ -->
-<div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-xl">
-    <div class="modal-content bg-dark text-white border-0">
-      <div class="modal-header border-0">
-        <h5 class="modal-title" id="zoomModalTitle">Product Image</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+  <!-- Image Zoom Modal -->
+  <div class="modal fade" id="imageZoomModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="zoomModalTitle">Product Image</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <img id="zoomedImage" class="img-fluid" style="max-width: 100%; height: auto;">
+          <div class="mt-3">
+            <button class="btn btn-sm btn-outline-primary" onclick="zoomOut()">
+              <i class="fas fa-search-minus"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-primary" onclick="resetZoom()">
+              <i class="fas fa-expand-arrows-alt"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-primary" onclick="zoomIn()">
+              <i class="fas fa-search-plus"></i>
+            </button>
+          </div>
+          <small class="text-muted d-block mt-2">
+            Use scroll wheel or touch gestures to zoom • Click and drag to pan
+          </small>
+        </div>
       </div>
-      <div class="modal-body p-0 text-center">
-        <!-- यही id JavaScript खोजता है -->
-        <img id="zoomedImage" src="" class="img-fluid" style="max-height:80vh;cursor:grab;">
-      </div>
-    </div>
-  </div>
-</div>
-<!-- ════════════════════════════════════════════ -->
-
-  
-
-
-  <!-- Loading Spinner -->
-  <div id="loadingSpinner" class="loading-spinner d-none">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
     </div>
   </div>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Custom JS -->
+  <!-- Your Main JS -->
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 </body>
-
 </html>
