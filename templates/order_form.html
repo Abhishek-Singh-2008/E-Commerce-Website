@@ -1,291 +1,243 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order {{ product.name }} - Banaras Bartan</title>
-  
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Custom CSS -->
-  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-</head>
-<body>
+{% extends "base.html" %}
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
-        <img src="https://i.postimg.cc/bJMg6rx4/Whats-App-Image-2025-07-11-at-3-19-00-PM.jpg" 
-             alt="Logo" class="navbar-logo me-2 rounded-circle">
-        <div>
-          <span class="brand-name">Banaras Bartan</span>
-          <small class="brand-tagline d-block text-warning">Order Form</small>
-        </div>
-      </a>
-      
-      <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="{{ url_for('index') }}">
-          <i class="fas fa-arrow-left me-1"></i>Back to Store
-        </a>
-      </div>
-    </div>
-  </nav>
+{% block title %}Order {{ product.name }} - CookwareCraft{% endblock %}
 
-  <!-- Main Content -->
-  <div class="container mt-4 mb-5">
+{% block content %}
+<div class="container py-5">
     <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <div class="card shadow">
-          <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">
-              <i class="fas fa-shopping-cart me-2"></i>Place Your Order
-            </h4>
-          </div>
-          <div class="card-body">
-            <!-- Product Info -->
-            <div class="row mb-4">
-              <div class="col-md-4">
-                <img src="{{ product.image }}" alt="{{ product.name }}" class="img-fluid rounded">
-              </div>
-              <div class="col-md-8">
-                <h5>{{ product.name }}</h5>
-                <p class="text-muted">{{ product.description }}</p>
-                <div class="h4 text-success">₹{{ product.price }}</div>
-              </div>
-            </div>
-
-            <!-- Order Form -->
-            <form id="orderForm">
-              <input type="hidden" id="productId" value="{{ product.id }}">
-              
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Your Name *</label>
-                    <input type="text" class="form-control" id="customerName" required>
-                  </div>
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Place Your Order</h4>
                 </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Phone Number *</label>
-                    <input type="tel" class="form-control" id="customerPhone" required>
-                  </div>
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Email (Optional)</label>
-                    <input type="email" class="form-control" id="customerEmail">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Quantity</label>
-                    <input type="number" class="form-control" id="quantity" min="1" value="1" onchange="updateTotal()">
-                  </div>
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Address *</label>
-                <textarea class="form-control" id="customerAddress" rows="3" required placeholder="Enter your full address for delivery"></textarea>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Payment Method *</label>
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="paymentMethod" id="paymentUPI" value="upi" checked>
-                      <label class="form-check-label" for="paymentUPI">
-                        <i class="fas fa-qrcode me-2"></i>UPI Payment
-                      </label>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="paymentMethod" id="paymentWhatsApp" value="whatsapp">
-                      <label class="form-check-label" for="paymentWhatsApp">
-                        <i class="fab fa-whatsapp me-2"></i>WhatsApp Order
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mb-3" id="upiTransactionSection">
-                <label class="form-label">UPI Transaction ID (After Payment)</label>
-                <input type="text" class="form-control" id="upiTransactionId" placeholder="Enter UPI transaction ID after payment">
-                <small class="text-muted">Please make payment first, then enter the transaction ID</small>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Additional Notes (Optional)</label>
-                <textarea class="form-control" id="notes" rows="2" placeholder="Any special instructions or notes"></textarea>
-              </div>
-
-              <!-- Order Summary -->
-              <div class="card bg-light mb-3">
                 <div class="card-body">
-                  <h6>Order Summary</h6>
-                  <div class="d-flex justify-content-between">
-                    <span>{{ product.name }} x <span id="summaryQuantity">1</span></span>
-                    <span>₹<span id="summaryPrice">{{ product.price }}</span></span>
-                  </div>
-                  <hr>
-                  <div class="d-flex justify-content-between h5">
-                    <span>Total Amount</span>
-                    <span class="text-success">₹<span id="totalAmount">{{ product.price }}</span></span>
-                  </div>
+                    <!-- Product Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <img src="{{ product.image }}" alt="{{ product.name }}" class="img-fluid rounded">
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="text-muted">{{ product.description }}</p>
+                            <h4 class="text-success">₹{{ product.price }}</h4>
+                        </div>
+                    </div>
+
+                    <!-- Order Form -->
+                    <form id="orderForm">
+                        <input type="hidden" id="productId" value="{{ product.id }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="customerName" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="customerName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="customerPhone" class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="customerPhone" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="customerEmail" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="customerEmail">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="customerAddress" class="form-label">Delivery Address *</label>
+                            <textarea class="form-control" id="customerAddress" rows="3" placeholder="Enter your complete delivery address" required></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="quantity" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="quantity" value="1" min="1" max="10" onchange="updateTotal()">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="paymentMethod" class="form-label">Payment Method *</label>
+                                    <select class="form-select" id="paymentMethod" onchange="toggleUpiField()" required>
+                                        <option value="">Select Payment Method</option>
+                                        <option value="cod">Cash on Delivery</option>
+                                        <option value="upi">UPI Payment</option>
+                                        <option value="bank_transfer">Bank Transfer</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="upiField" style="display: none;">
+                            <label for="upiTransactionId" class="form-label">UPI Transaction ID</label>
+                            <input type="text" class="form-control" id="upiTransactionId" placeholder="Enter UPI transaction ID">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="notes" rows="2" placeholder="Any special instructions or requests"></textarea>
+                        </div>
+
+                        <!-- Order Total -->
+                        <div class="bg-light p-3 rounded mb-3">
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Total Amount:</strong>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <strong id="totalAmount" class="text-success">₹{{ product.price }}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success btn-lg" onclick="placeOrder()">
+                                <i class="fas fa-check me-2"></i>Place Order
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Products
+                            </a>
+                        </div>
+                    </form>
                 </div>
-              </div>
-
-              <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-success btn-lg">
-                  <i class="fas fa-check me-2"></i>Place Order
-                </button>
-                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
-                  <i class="fas fa-arrow-left me-2"></i>Back to Products
-                </a>
-              </div>
-            </form>
-          </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- Loading Spinner -->
-  <div id="loadingSpinner" class="loading-spinner d-none">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
+<!-- Order Success Modal -->
+<div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                <h5>Order Placed Successfully!</h5>
+                <p class="text-muted">Your order has been received and will be processed soon.</p>
+                <div id="orderDetails"></div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary" onclick="goToConfirmation()">View Details</button>
+                <button type="button" class="btn btn-secondary" onclick="goToHome()">Continue Shopping</button>
+            </div>
+        </div>
     </div>
-  </div>
+</div>
+{% endblock %}
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <script>
-    const productPrice = Number("{{ product.price }}");
+{% block scripts %}
+<script>
+const productPrice = {{ product.price }};
 
-    // Update total when quantity changes
-    function updateTotal() {
-      const quantity = document.getElementById('quantity').value;
-      const total = productPrice * quantity;
-      
-      document.getElementById('summaryQuantity').textContent = quantity;
-      document.getElementById('summaryPrice').textContent = productPrice * quantity;
-      document.getElementById('totalAmount').textContent = total;
+function updateTotal() {
+    const quantity = document.getElementById('quantity').value;
+    const total = productPrice * quantity;
+    document.getElementById('totalAmount').textContent = '₹' + total;
+}
+
+function toggleUpiField() {
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const upiField = document.getElementById('upiField');
+    
+    if (paymentMethod === 'upi') {
+        upiField.style.display = 'block';
+        document.getElementById('upiTransactionId').required = true;
+    } else {
+        upiField.style.display = 'none';
+        document.getElementById('upiTransactionId').required = false;
+    }
+}
+
+function placeOrder() {
+    const form = document.getElementById('orderForm');
+    
+    // Validate form
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
     }
 
-    // Toggle UPI transaction section
-    document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-      radio.addEventListener('change', function() {
-        const upiSection = document.getElementById('upiTransactionSection');
-        if (this.value === 'upi') {
-          upiSection.style.display = 'block';
-        } else {
-          upiSection.style.display = 'none';
-        }
-      });
-    });
-
-    // Handle form submission
-    document.getElementById('orderForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const formData = {
+    // Collect form data
+    const orderData = {
         product_id: document.getElementById('productId').value,
         customer_name: document.getElementById('customerName').value,
         customer_phone: document.getElementById('customerPhone').value,
         customer_email: document.getElementById('customerEmail').value,
-        quantity: document.getElementById('quantity').value,
         customer_address: document.getElementById('customerAddress').value,
-        payment_method: document.querySelector('input[name="paymentMethod"]:checked').value,
+        quantity: document.getElementById('quantity').value,
+        payment_method: document.getElementById('paymentMethod').value,
         upi_transaction_id: document.getElementById('upiTransactionId').value,
         notes: document.getElementById('notes').value
-      };
-
-      // Validate required fields
-      if (!formData.customer_name || !formData.customer_phone || !formData.customer_address) {
-        showAlert('Please fill in all required fields', 'warning');
-        return;
-      }
-
-      if (formData.payment_method === 'upi' && !formData.upi_transaction_id) {
-        showAlert('Please enter UPI transaction ID after making payment', 'warning');
-        return;
-      }
-
-      showLoading();
-
-      try {
-        const response = await fetch('/order/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(formData)
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          showAlert('Order placed successfully!', 'success');
-          setTimeout(() => {
-            window.location.href = '/payment-confirmation';
-          }, 1500);
-        } else {
-          showAlert(data.message || 'Error placing order', 'danger');
-        }
-      } catch (error) {
-        console.error('Error placing order:', error);
-        showAlert('Error placing order. Please try again.', 'danger');
-      } finally {
-        hideLoading();
-      }
-    });
+    };
 
     // Show loading
-    function showLoading() {
-      document.getElementById('loadingSpinner').classList.remove('d-none');
-    }
+    const submitBtn = event.target;
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    submitBtn.disabled = true;
 
-    // Hide loading
-    function hideLoading() {
-      document.getElementById('loadingSpinner').classList.add('d-none');
-    }
+    // Submit order
+    fetch('/order/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success modal
+            document.getElementById('orderDetails').innerHTML = `
+                <p><strong>Order ID:</strong> ${data.order_id}</p>
+                <p><strong>Total:</strong> ₹${data.total_amount}</p>
+            `;
+            
+            // Store order details for confirmation page
+            sessionStorage.setItem('lastOrderId', data.order_id);
+            sessionStorage.setItem('lastOrderTotal', data.total_amount);
+            
+            const modal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
+            modal.show();
+        } else {
+            showAlert('Error: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Failed to place order. Please try again.', 'danger');
+    })
+    .finally(() => {
+        // Reset button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
 
-    // Show alert
-    function showAlert(message, type = 'info') {
-      const alert = document.createElement('div');
-      alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-      alert.style.top = '20px';
-      alert.style.right = '20px';
-      alert.style.zIndex = '9999';
-      alert.style.minWidth = '300px';
-      
-      alert.innerHTML = `
+function goToConfirmation() {
+    window.location.href = '/payment-confirmation';
+}
+
+function goToHome() {
+    window.location.href = '/';
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      `;
-      
-      document.body.appendChild(alert);
-      
-      setTimeout(() => {
-        if (alert.parentNode) {
-          alert.remove();
-        }
-      }, 5000);
-    }
-  </script>
-
-</body>
-</html>
+    `;
+    document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.row'));
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}
